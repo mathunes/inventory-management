@@ -43,6 +43,18 @@ public class ProductService {
         return productRepository.save(product);
     }
 
+    public Product update(Long id, Product input) {
+        Product existing = findByIdOrThrow(id);
+
+        existing.setCode(input.getCode());
+        existing.setDescription(input.getDescription());
+        existing.setPrice(input.getPrice());
+        existing.setQuantity(input.getQuantity());
+        existing.setType(input.getType());
+
+        return productRepository.save(existing);
+    }
+
     public void delete(Long id) {
         productRepository.deleteById(id);
     }

@@ -40,7 +40,7 @@ public class ProductController {
     public Product update(@PathVariable Long id, @RequestBody Product product) {
         service.findByIdOrThrow(id);
         product.setId(id);
-        return service.save(product);
+        return service.update(id, product);
     }
 
     @DeleteMapping("/{id}")
