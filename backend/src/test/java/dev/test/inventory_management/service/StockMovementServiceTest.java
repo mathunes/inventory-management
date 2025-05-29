@@ -57,7 +57,7 @@ class StockMovementServiceTest {
 
         StockMovement result = stockMovementService.registerMovement(movement);
 
-        assertThat(product.getQuantity()).isEqualTo(15); // 10 + 5
+        assertThat(product.getQuantity()).isEqualTo(15);
         assertThat(result).isEqualTo(movement);
 
         verify(productRepository).save(product);
@@ -112,7 +112,7 @@ class StockMovementServiceTest {
         StockMovement movement = new StockMovement();
         movement.setProduct(product);
         movement.setType(StockMovementType.OUT);
-        movement.setQuantity(15); // more than available quantity 10
+        movement.setQuantity(15);
 
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
 
