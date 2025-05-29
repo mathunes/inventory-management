@@ -15,38 +15,40 @@
       <p>No products found.</p>
     </div>
 
-    <table v-else class="product-table">
-      <thead>
-        <tr>
-          <th>Code</th>
-          <th>Description</th>
-          <th>Type</th>
-          <th>Price</th>
-          <th>Quantity</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="product in products" :key="product.code">
-          <td>{{ product.code }}</td>
-          <td>{{ product.description }}</td>
-          <td>{{ product.type }}</td>
-          <td>{{ formatCurrency(product.price) }}</td>
-          <td>{{ product.quantity }}</td>
-          <td class="actions">
-            <button @click="goToMovements(product.id)" title="See Movements" class="button-action">
-              <i class="fas fa-boxes"></i> See Movements
-            </button>
-            <button @click="goToEdit(product.id)" title="Edit" class="button-action button-edit">
-              <i class="fas fa-edit"></i>
-            </button>
-            <button @click="deleteProduct(product.id)" title="Delete" class="button-action button-delete">
-              <i class="fas fa-trash-alt"></i>
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-wrapper" v-else>
+      <table class="product-table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Description</th>
+            <th>Type</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="product in products" :key="product.code">
+            <td>{{ product.code }}</td>
+            <td>{{ product.description }}</td>
+            <td>{{ product.type }}</td>
+            <td>{{ formatCurrency(product.price) }}</td>
+            <td>{{ product.quantity }}</td>
+            <td class="actions">
+              <button @click="goToMovements(product.id)" title="See Movements" class="button-action">
+                <i class="fas fa-boxes"></i>
+              </button>
+              <button @click="goToEdit(product.id)" title="Edit" class="button-action button-edit">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button @click="deleteProduct(product.id)" title="Delete" class="button-action button-delete">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </section>
 </template>
 
@@ -111,6 +113,8 @@ onMounted(fetchProducts)
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .link-button {
@@ -125,6 +129,7 @@ onMounted(fetchProducts)
   text-decoration: none;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+  white-space: nowrap;
 }
 
 .link-button:hover {
@@ -136,10 +141,15 @@ onMounted(fetchProducts)
   transform: scale(0.97);
 }
 
+.table-wrapper {
+  overflow-x: auto;
+}
+
 .product-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 1rem;
+  min-width: 700px;
 }
 
 .product-table th,
@@ -152,6 +162,7 @@ onMounted(fetchProducts)
 .actions {
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .button-action {
@@ -198,5 +209,26 @@ onMounted(fetchProducts)
   color: #b91c1c;
   font-weight: bold;
   margin-top: 1rem;
+}
+
+@media (max-width: 600px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .link-button {
+    justify-content: center;
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .button-action {
+    justify-content: center;
+    width: 100%;
+  }
 }
 </style>

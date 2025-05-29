@@ -7,7 +7,7 @@
 
   <hr>
 
-  <form @submit.prevent="handleSubmit">
+  <form @submit.prevent="handleSubmit" class="product-form">
     <div class="form-group">
       <label>Code</label>
       <input v-model="form.code" required />
@@ -81,12 +81,17 @@ const handleSubmit = async () => {
     loading.value = false
   }
 }
-
 </script>
 
 <style scoped>
 .top-bar {
   margin-bottom: 1rem;
+}
+
+.product-form {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
 }
 
 .form-group {
@@ -104,6 +109,7 @@ button {
   background-color: var(--primary-color, #007bff);
   color: white;
   cursor: pointer;
+  width: 100%;
 }
 
 button:disabled {
@@ -111,7 +117,8 @@ button:disabled {
   cursor: not-allowed;
 }
 
-input, select {
+input,
+select {
   width: 100%;
   padding: 0.5rem;
   border: 1px solid #aaa;
@@ -123,5 +130,12 @@ input, select {
 label {
   font-weight: 600;
   margin-bottom: 0.25rem;
+}
+
+@media (min-width: 640px) {
+  button {
+    width: auto;
+    align-self: flex-start;
+  }
 }
 </style>

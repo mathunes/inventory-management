@@ -9,13 +9,13 @@
 
   <div class="tabs">
     <button
-      @click="activeTab = 'byType'"
+      @click="setActiveTab('byType')"
       :class="['tab-button', { active: activeTab === 'byType' }]"
     >
       Report by Product Type
     </button>
     <button
-      @click="() => { activeTab = 'profit'; fetchProfits(); }"
+      @click="setActiveTab('profit')"
       :class="['tab-button', { active: activeTab === 'profit' }]"
     >
       Products Profit
@@ -28,7 +28,12 @@
         <i class="fas fa-filter"></i>
         Filter by Type
       </label>
-      <select id="type-select" v-model="selectedType" @change="fetchByType" class="filter-select">
+      <select
+        id="type-select"
+        v-model="selectedType"
+        @change="fetchByType"
+        class="filter-select"
+      >
         <option disabled value="">Select</option>
         <option value="ELECTRONIC">ELECTRONIC</option>
         <option value="HOME_APPLIANCE">HOME_APPLIANCE</option>
@@ -57,7 +62,9 @@
       </tbody>
     </table>
 
-    <p v-else-if="selectedType && productsByType.length === 0">No products found for selected type.</p>
+    <p v-else-if="selectedType && productsByType.length === 0">
+      No products found for selected type.
+    </p>
   </div>
 
   <div v-else-if="activeTab === 'profit'">
@@ -95,17 +102,38 @@ const productsByType = ref([])
 const profitReports = ref([])
 
 const fetchByType = async () => {
-  if (!selectedType.value) return
-  const res = await axios.get(`http://localhost:8080/products/by-type?type=${selectedType.value}`)
-  productsByType.value = res.data
+  if (!selectedType.value) {
+    productsByType.value = []
+    return
+  }
+  try {
+    const res = await axios.get(
+      `http://localhost:8080/products/by-type?type=${selectedType.value}`
+    )
+    productsByType.value = res.data
+  } catch {
+    productsByType.value = []
+  }
 }
 
 const fetchProfits = async () => {
-  const res = await axios.get('http://localhost:8080/products/profit')
-  profitReports.value = res.data
+  try {
+    const res = await axios.get('http://localhost:8080/products/profit')
+    profitReports.value = res.data
+  } catch {
+    profitReports.value = []
+  }
 }
 
-const formatCurrency = (val) => val.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+const setActiveTab = (tab) => {
+  activeTab.value = tab
+  if (tab === 'profit') {
+    fetchProfits()
+  }
+}
+
+const formatCurrency = (val) =>
+  val.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
 </script>
 
 <style scoped>
@@ -154,7 +182,8 @@ table {
   margin-top: 1rem;
 }
 
-th, td {
+th,
+td {
   border: 1px solid #ccc;
   padding: 0.5rem;
   text-align: left;
@@ -163,7 +192,7 @@ th, td {
 .filter-wrapper {
   display: flex;
   flex-direction: row;
-  justify-content: end;
+  justify-content: flex-end;
   margin-bottom: 1rem;
 }
 

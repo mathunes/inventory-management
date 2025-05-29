@@ -10,28 +10,30 @@
     </RouterLink>
   </div>
 
-  <hr>
+  <hr />
 
   <p v-if="movements.length === 0">No movements found.</p>
 
-  <table v-else>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Sale Price</th>
-        <th>Sale Date</th>
-        <th>Quantity</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="movement in movements" :key="movement.id">
-        <td>{{ movement.type }}</td>
-        <td>{{ formatCurrency(movement.salePrice) }}</td>
-        <td>{{ formatDate(movement.saleDate) }}</td>
-        <td>{{ movement.quantity }}</td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="table-container" v-else>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Sale Price</th>
+          <th>Sale Date</th>
+          <th>Quantity</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="movement in movements" :key="movement.id">
+          <td>{{ movement.type }}</td>
+          <td>{{ formatCurrency(movement.salePrice) }}</td>
+          <td>{{ formatDate(movement.saleDate) }}</td>
+          <td>{{ movement.quantity }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </template>
 
 <script setup>
@@ -49,8 +51,8 @@ const movements = ref([])
 onMounted(async () => {
   try {
     const productRes = await axios.get(`http://localhost:8080/products/${productId}`)
-
     movements.value = productRes.data.movements
+    product.value = productRes.data
   } catch (err) {
     console.error('Error loading product or movements', err)
   }
@@ -95,17 +97,55 @@ const formatDate = (value) =>
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.table-container {
+  overflow-x: auto;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 1rem;
+  min-width: 600px;
 }
 
 th, td {
   border: 1px solid #ccc;
   padding: 0.5rem;
   text-align: left;
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  .link-button {
+    font-size: 0.95rem;
+    padding: 0.5rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.25rem;
+  }
+
+  table {
+    font-size: 0.9rem;
+  }
+
+  .link-button {
+    width: 100%;
+    justify-content: center;
+  }
 }
 </style>
