@@ -75,6 +75,7 @@ mvn test
 
 ## Development
 
+- Backend API documentation is available in the [Postman collection](Inventory%20Management%20API.postman_collection.json)
 - Frontend development server includes hot-reload for quick development
 - ESLint and Prettier are configured for code formatting and linting
 
