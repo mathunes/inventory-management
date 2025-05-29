@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,23 +67,26 @@ class StockMovementServiceTest {
     @Test
     @DisplayName("Should register OUT movement and decrease product quantity")
     void registerOutMovement_decreasesProductQuantity() {
+        product.setPrice(BigDecimal.valueOf(100.00));
+    
         StockMovement movement = new StockMovement();
         movement.setProduct(product);
         movement.setType(StockMovementType.OUT);
         movement.setQuantity(3);
-
+        movement.setSalePrice(BigDecimal.valueOf(120.00));
+    
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(stockMovementRepository.save(any(StockMovement.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
+    
         StockMovement result = stockMovementService.registerMovement(movement);
-
-        assertThat(product.getQuantity()).isEqualTo(7); // 10 - 3
+    
+        assertThat(product.getQuantity()).isEqualTo(7);
         assertThat(result).isEqualTo(movement);
-
+    
         verify(productRepository).save(product);
         verify(stockMovementRepository).save(movement);
-    }
+    }    
 
     @Test
     @DisplayName("Should throw exception if product not found when registering movement")
@@ -131,5 +135,26 @@ class StockMovementServiceTest {
         List<StockMovement> result = stockMovementService.findAll();
 
         assertThat(result).containsExactly(m1, m2);
+    }
+
+    @Test
+    @DisplayName("Should throw exception if sale price is less than product price for OUT movement")
+    void registerOutMovement_salePriceBelowCost_throwsException() {
+        product.setPrice(BigDecimal.valueOf(100.00));
+
+        StockMovement movement = new StockMovement();
+        movement.setProduct(product);
+        movement.setType(StockMovementType.OUT);
+        movement.setQuantity(2);
+        movement.setSalePrice(BigDecimal.valueOf(90.00));
+
+        when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
+
+        assertThatThrownBy(() -> stockMovementService.registerMovement(movement))
+            .isInstanceOf(BusinessException.class)
+            .hasMessageContaining("Sale price must not be lower");
+
+        verify(productRepository, never()).save(any());
+        verify(stockMovementRepository, never()).save(any());
     }
 }

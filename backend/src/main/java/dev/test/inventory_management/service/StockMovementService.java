@@ -34,10 +34,17 @@ public class StockMovementService {
 
         if (movement.getType() == StockMovementType.IN) {
             product.setQuantity(product.getQuantity() + movement.getQuantity());
+
         } else if (movement.getType() == StockMovementType.OUT) {
+
             if (product.getQuantity() < movement.getQuantity()) {
                 throw new BusinessException("Not enough stock for product: " + product.getCode());
             }
+
+            if (movement.getSalePrice().compareTo(product.getPrice()) < 0) {
+                throw new BusinessException("Sale price must not be lower than product cost price for product: " + product.getCode());
+            }
+
             product.setQuantity(product.getQuantity() - movement.getQuantity());
         }
 

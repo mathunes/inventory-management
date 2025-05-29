@@ -82,7 +82,7 @@ public class ProductService {
                 totalProfit = totalProfit.add(movementProfit);
                 totalQuantityOut += movement.getQuantity();
             }
-    
+
             Map<String, Object> map = new LinkedHashMap<>();
             map.put("productId", product.getId());
             map.put("code", product.getCode());
@@ -90,10 +90,10 @@ public class ProductService {
             map.put("price", product.getPrice());
             map.put("totalQuantityOut", totalQuantityOut);
             map.put("totalProfit", totalProfit);
-    
+
             resultList.add(map);
         }
-    
+
         return resultList;
-    }    
+    }
 }
