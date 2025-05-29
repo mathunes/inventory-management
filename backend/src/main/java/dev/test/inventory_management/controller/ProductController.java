@@ -68,8 +68,8 @@ public class ProductController {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/{id}/profit")
-    public ResponseEntity<Map<String, Object>> getProfit(@PathVariable Long id) {
-        return ResponseEntity.ok(service.getProductProfit(id));
-    }
+    @GetMapping("/profit")
+    public ResponseEntity<List<Map<String, Object>>> getAllProfits() {
+        return ResponseEntity.ok(service.getAllProductProfits());
+    }    
 }

@@ -86,39 +86,106 @@ class ProductServiceTest {
     }
 
     @Test
-    @DisplayName("Should calculate total profit for a product with movements")
-    void testGetProductProfit() {
+    @DisplayName("Should calculate total profit for all products")
+    void testGetAllProductProfits() {
+        Product product1 = new Product();
+        product1.setId(1L);
+        product1.setCode("P001");
+        product1.setDescription("Smart TV");
+        product1.setPrice(BigDecimal.valueOf(1000));
+        product1.setQuantity(10);
+
+        Product product2 = new Product();
+        product2.setId(2L);
+        product2.setCode("P002");
+        product2.setDescription("Notebook");
+        product2.setPrice(BigDecimal.valueOf(2500));
+        product2.setQuantity(5);
+
         StockMovement m1 = new StockMovement();
         m1.setSalePrice(BigDecimal.valueOf(1200));
         m1.setQuantity(2);
         m1.setType(StockMovementType.OUT);
-        m1.setProduct(product);
+        m1.setProduct(product1);
 
         StockMovement m2 = new StockMovement();
         m2.setSalePrice(BigDecimal.valueOf(1100));
         m2.setQuantity(1);
         m2.setType(StockMovementType.OUT);
-        m2.setProduct(product);
+        m2.setProduct(product1);
 
-        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        when(stockMovementRepository.findByProductAndType(product, StockMovementType.OUT))
+        StockMovement m3 = new StockMovement();
+        m3.setSalePrice(BigDecimal.valueOf(2700));
+        m3.setQuantity(1);
+        m3.setType(StockMovementType.OUT);
+        m3.setProduct(product2);
+
+        when(productRepository.findAll()).thenReturn(List.of(product1, product2));
+        when(stockMovementRepository.findByProductAndType(product1, StockMovementType.OUT))
             .thenReturn(List.of(m1, m2));
+        when(stockMovementRepository.findByProductAndType(product2, StockMovementType.OUT))
+            .thenReturn(List.of(m3));
 
-        Map<String, Object> profit = productService.getProductProfit(1L);
+        List<Map<String, Object>> results = productService.getAllProductProfits();
 
-        assertThat(profit.get("totalQuantityOut")).isEqualTo(3);
-        assertThat(profit.get("totalProfit")).isEqualTo(BigDecimal.valueOf((1200 - 1000) * 2 + (1100 - 1000) * 1));
+        assertThat(results).hasSize(2);
+
+        Map<String, Object> result1 = results.get(0);
+        assertThat(result1.get("productId")).isEqualTo(1L);
+        assertThat(result1.get("totalQuantityOut")).isEqualTo(3);
+        assertThat(result1.get("totalProfit")).isEqualTo(BigDecimal.valueOf(500));
+
+        Map<String, Object> result2 = results.get(1);
+        assertThat(result2.get("productId")).isEqualTo(2L);
+        assertThat(result2.get("totalQuantityOut")).isEqualTo(1);
+        assertThat(result2.get("totalProfit")).isEqualTo(BigDecimal.valueOf(200));
     }
 
     @Test
-    @DisplayName("Should return profit with zero movement")
-    void testGetProductProfit_noMovements() {
-        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        when(stockMovementRepository.findByProductAndType(product, StockMovementType.OUT)).thenReturn(Collections.emptyList());
+    @DisplayName("Should handle product with no stock movements")
+    void testGetAllProductProfits_noMovements() {
+        Product product = new Product();
+        product.setId(1L);
+        product.setCode("P001");
+        product.setDescription("Smart TV");
+        product.setPrice(BigDecimal.valueOf(1000));
+        product.setQuantity(10);
 
-        Map<String, Object> result = productService.getProductProfit(1L);
+        when(productRepository.findAll()).thenReturn(List.of(product));
+        when(stockMovementRepository.findByProductAndType(product, StockMovementType.OUT)).thenReturn(List.of());
 
+        List<Map<String, Object>> results = productService.getAllProductProfits();
+
+        assertThat(results).hasSize(1);
+        Map<String, Object> result = results.get(0);
         assertThat(result.get("totalQuantityOut")).isEqualTo(0);
         assertThat(result.get("totalProfit")).isEqualTo(BigDecimal.ZERO);
+    }
+
+    @Test
+    @DisplayName("Should calculate negative profit when sale price is lower than cost")
+    void testGetAllProductProfits_negativeProfit() {
+        Product product = new Product();
+        product.setId(1L);
+        product.setCode("P001");
+        product.setDescription("Smart TV");
+        product.setPrice(BigDecimal.valueOf(1000));
+        product.setQuantity(10);
+
+        StockMovement m1 = new StockMovement();
+        m1.setSalePrice(BigDecimal.valueOf(900));
+        m1.setQuantity(1);
+        m1.setType(StockMovementType.OUT);
+        m1.setProduct(product);
+
+        when(productRepository.findAll()).thenReturn(List.of(product));
+        when(stockMovementRepository.findByProductAndType(product, StockMovementType.OUT)).thenReturn(List.of(m1));
+
+        List<Map<String, Object>> results = productService.getAllProductProfits();
+
+        assertThat(results).hasSize(1);
+        Map<String, Object> result = results.get(0);
+        assertThat(result.get("totalQuantityOut")).isEqualTo(1);
+        assertThat(result.get("totalProfit")).isEqualTo(BigDecimal.valueOf(-100));
     }
 }

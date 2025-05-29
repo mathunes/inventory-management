@@ -11,6 +11,7 @@ import dev.test.inventory_management.repository.StockMovementRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,32 +65,35 @@ public class ProductService {
         return total != null ? total : 0;
     }
 
-    public Map<String, Object> getProductProfit(Long productId) {
-        Product product = productRepository.findById(productId)
-            .orElseThrow(() -> new ResourceNotFoundException("Product not found with ID " + productId));
-
-        List<StockMovement> outMovements = stockMovementRepository.findByProductAndType(product, StockMovementType.OUT);
-
-        int totalQuantityOut = 0;
-        BigDecimal totalProfit = BigDecimal.ZERO;
-
-        for (StockMovement movement : outMovements) {
-            BigDecimal unitProfit = movement.getSalePrice()
-                .subtract(product.getPrice());
-            BigDecimal movementProfit = unitProfit.multiply(BigDecimal.valueOf(movement.getQuantity()));
-
-            totalProfit = totalProfit.add(movementProfit);
-            totalQuantityOut += movement.getQuantity();
+    public List<Map<String, Object>> getAllProductProfits() {
+        List<Product> products = productRepository.findAll();
+        List<Map<String, Object>> resultList = new ArrayList<>();
+    
+        for (Product product : products) {
+            List<StockMovement> outMovements = stockMovementRepository.findByProductAndType(product, StockMovementType.OUT);
+    
+            int totalQuantityOut = 0;
+            BigDecimal totalProfit = BigDecimal.ZERO;
+    
+            for (StockMovement movement : outMovements) {
+                BigDecimal unitProfit = movement.getSalePrice().subtract(product.getPrice());
+                BigDecimal movementProfit = unitProfit.multiply(BigDecimal.valueOf(movement.getQuantity()));
+    
+                totalProfit = totalProfit.add(movementProfit);
+                totalQuantityOut += movement.getQuantity();
+            }
+    
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("productId", product.getId());
+            map.put("code", product.getCode());
+            map.put("description", product.getDescription());
+            map.put("price", product.getPrice());
+            map.put("totalQuantityOut", totalQuantityOut);
+            map.put("totalProfit", totalProfit);
+    
+            resultList.add(map);
         }
-
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("productId", product.getId());
-        result.put("code", product.getCode());
-        result.put("description", product.getDescription());
-        result.put("price", product.getPrice());
-        result.put("totalQuantityOut", totalQuantityOut);
-        result.put("totalProfit", totalProfit);
-
-        return result;
-    }
+    
+        return resultList;
+    }    
 }
